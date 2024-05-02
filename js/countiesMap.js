@@ -7,7 +7,6 @@ class MapVis {
         this.mobilityData = mobilityData;
         this.stateData = stateData;
 
-
         this.initVis()
     }
 
@@ -28,6 +27,9 @@ class MapVis {
 
         // Converting TopoJSON data into GeoJSON data structure
         vis.geo = topojson.feature(vis.geoData, vis.geoData.objects.counties).features;
+
+        // Add this line to count and log the number of counties
+        console.log("Number of counties:", vis.geo.length);
 
         // Drawing counties
         vis.viewpoint = {'width': 975, 'height': 610};

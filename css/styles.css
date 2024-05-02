@@ -174,51 +174,63 @@ p {
     padding-right: 350px;
 }
 .color-01 {
-    fill: #9b252f;
-}
-
-.color-02 {
-    fill: #b65441;
-}
-
-.color-03 {
-    fill: #d07e59;
-}
-
-.color-04 {
-    fill: #e5a979;
-}
-
-.color-05 {
-    fill: #f4d79e;
-}
-
-.color-06 {
-    fill: #fcfdc1;
-}
-
-.color-07 {
-    fill: #cdddb5;
-}
-.color-08 {
-    fill: #9dbda9;
-}
-
-.color-09 {
-    fill: #729d9d;
-}
-
-.color-10 {
-    fill: #4f7f8b;
-}
-.color-11 {
-    fill: #34687e;
-}
-
-.color-error {
     fill: #000000;
 }
 
+.color-02 {
+    fill: #171717;
+}
+
+.color-03 {
+    fill: #2E2E2E;
+}
+
+.color-04 {
+    fill: #454545;
+}
+
+.color-05 {
+    fill: #5C5C5C
+}
+
+.color-06 {
+    fill: #737373;
+}
+
+.color-07 {
+    fill: #8B8B8B;
+}
+.color-08 {
+    fill: #A2A2A2;
+}
+
+.color-09 {
+    fill: #B9B9B9;
+}
+
+.color-10 {
+    fill: #D0D0D0;
+}
+.color-11 {
+    fill: #E7E7E7
+}
+
+.color-error {
+    fill: #f60303;
+}
+
+
+#canvas {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100%;
+}
+
+canvas {
+    margin: auto;
+}
 
 
 /*Section 6*/

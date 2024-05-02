@@ -1,6 +1,5 @@
-let userGuess;
-let ladderVis;
 let mapVis;
+let pixelVis;
 let moveGraphs;
 let slideVal = 0;
 let slideBounds = [0,500];
@@ -37,4 +36,6 @@ function createVis(data) {
     // Map Vis
     mapVis = new MapVis("map-vis", data[2], data[3], data[6])
 
+    // Pixel Vis
+    pixelVis = new PixelateVis("canvas", "img/childPhoto.png");
 }
