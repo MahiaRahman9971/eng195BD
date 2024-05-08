@@ -1,6 +1,5 @@
 let mapVis;
 let pixelVis;
-let moveGraphs;
 let slideVal = 0;
 let slideBounds = [0,500];
 let guessAccuracy = 0;
