@@ -37,23 +37,22 @@ class MapVis {
             .enter().append("path")
             .attr("class", "county")
             .attr("d", vis.path)
-            .attr("opacity", 0) // Start with invisible counties
-            .attr("class", d => handleGetMobility(d));
+            .attr("class", d => handleGetMobility(d))
+            .attr("opacity", 1); // Start fully visible
 
-        // Randomly position counties around the edges
-        vis.counties.attr("transform", function (d) {
-            const bounds = vis.path.bounds(d);
-            const posX = (Math.random() < 0.5) ? -bounds[0][0] * 5 : vis.width + bounds[1][0] * 5;
-            const posY = (Math.random() < 0.5) ? -bounds[0][1] * 5 : vis.height + bounds[1][1] * 5;
-            return `translate(${posX},${posY})`;
-        });
+        // Move counties to the right edge
+        vis.counties.transition().duration(2000)
+            .attr("transform", function (d) {
+                const bounds = vis.path.bounds(d);
+                const posX = vis.width + bounds[1][0] * 5; // Always move to the right beyond the visible area
+                const centerY = (bounds[0][1] + bounds[1][1]) / 2;
+                return `translate(${posX},${centerY - vis.height / 2})`; // Adjust posY to keep counties vertically aligned
+            })
+            .attr("opacity", 0.7) // Fade slightly but not completely
+            .end() // Ensures the next transition only starts after the first one completes
+            .catch(error => console.error('Error during transition:', error))
 
-        // Transition to form the map
-        vis.counties.transition().duration(3000)
-            .attr("transform", "translate(0,0)")
-            .attr("opacity", 1);
-
-        function handleGetMobility(d) {
+    function handleGetMobility(d) {
             for (let i = 0; i < vis.mobilityData.length; i++) {
                 if (d.id == vis.mobilityData[i].geoid) {
                     return handleGetColor(vis.mobilityData[i].kfr_pooled_pooled_p25);
