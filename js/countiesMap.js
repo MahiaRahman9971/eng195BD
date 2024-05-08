@@ -41,18 +41,38 @@ class MapVis {
             .attr("opacity", 1); // Start fully visible
 
         // Move counties to the right edge
-        vis.counties.transition().duration(2000)
-            .attr("transform", function (d) {
+        // Transition counties to squares and move to the right edge
+        vis.counties.transition().duration(6000)
+            .attrTween("d", function(d) {
+                const node = d3.select(this);
                 const bounds = vis.path.bounds(d);
-                const posX = vis.width + bounds[1][0] * 5; // Always move to the right beyond the visible area
-                const centerY = (bounds[0][1] + bounds[1][1]) / 2;
-                return `translate(${posX},${centerY - vis.height / 2})`; // Adjust posY to keep counties vertically aligned
+                const initialWidth = bounds[1][0] - bounds[0][0];
+                const initialHeight = bounds[1][1] - bounds[0][1];
+                const size = Math.min(initialWidth, initialHeight); // Fixed size for the square for simplicity
+                const initialCenterX = (bounds[0][0] + bounds[1][0]) / 2;
+                const initialCenterY = (bounds[0][1] + bounds[1][1]) / 2;
+
+                const initialPath = node.attr("d");
+
+                return function(t) {
+                    // Calculate new center X position as t interpolates from 0 to 1
+                    const newCenterX = initialCenterX + t * (vis.width - initialCenterX + size); // Adjust so it moves rightwards
+
+                    // Define target path using new center X position
+                    const targetPath = `M${newCenterX - size/2},${initialCenterY - size/2} h${size} v${size} h${-size} Z`;
+
+                    // Use flubber to interpolate between initial and target path
+                    const interpolator = flubber.interpolate(initialPath, targetPath, { maxSegmentLength: 10 });
+
+                    // Return interpolated path at time t
+                    return interpolator(t);
+                };
             })
             .attr("opacity", 0.7) // Fade slightly but not completely
             .end() // Ensures the next transition only starts after the first one completes
-            .catch(error => console.error('Error during transition:', error))
+            .catch(error => console.error('Error during transition:', error));
 
-    function handleGetMobility(d) {
+        function handleGetMobility(d) {
             for (let i = 0; i < vis.mobilityData.length; i++) {
                 if (d.id == vis.mobilityData[i].geoid) {
                     return handleGetColor(vis.mobilityData[i].kfr_pooled_pooled_p25);
