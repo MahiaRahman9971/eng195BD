@@ -29,6 +29,12 @@ class MapVis {
         // Setting up path
         vis.path = d3.geoPath()
 
+        // Calculate grid size
+        const numItems = vis.geo.length;
+        const numCols = Math.ceil(Math.sqrt(numItems));
+        const numRows = numCols; // Make it as square as possible
+        const squareSize = Math.floor(vis.width / numCols);
+
         // Initial placement of counties
         vis.counties = vis.svg.append("g")
             .attr("class", "counties")
@@ -40,31 +46,24 @@ class MapVis {
             .attr("class", d => handleGetMobility(d))
             .attr("opacity", 1); // Start fully visible
 
-        // Move counties to the right edge
-        // Transition counties to squares and move to the right edge
+        // Move counties to form a larger square grid
         vis.counties.transition().duration(6000)
-            .attrTween("d", function(d) {
+            .attrTween("d", function(d, i) {
                 const node = d3.select(this);
-                const bounds = vis.path.bounds(d);
-                const initialWidth = bounds[1][0] - bounds[0][0];
-                const initialHeight = bounds[1][1] - bounds[0][1];
-                const size = Math.min(initialWidth, initialHeight); // Fixed size for the square for simplicity
-                const initialCenterX = (bounds[0][0] + bounds[1][0]) / 2;
-                const initialCenterY = (bounds[0][1] + bounds[1][1]) / 2;
-
                 const initialPath = node.attr("d");
 
+                const colIndex = i % numCols;
+                const rowIndex = Math.floor(i / numCols);
+
+                const newX = vis.margin.left + colIndex * squareSize;
+                const newY = vis.margin.top + rowIndex * squareSize;
+
+                const targetPath = `M${newX},${newY} h${squareSize} v${squareSize} h${-squareSize} Z`;
+
+                // Use flubber to interpolate between initial and target path
+                const interpolator = flubber.interpolate(initialPath, targetPath, { maxSegmentLength: 10 });
+
                 return function(t) {
-                    // Calculate new center X position as t interpolates from 0 to 1
-                    const newCenterX = initialCenterX + t * (vis.width - initialCenterX + size); // Adjust so it moves rightwards
-
-                    // Define target path using new center X position
-                    const targetPath = `M${newCenterX - size/2},${initialCenterY - size/2} h${size} v${size} h${-size} Z`;
-
-                    // Use flubber to interpolate between initial and target path
-                    const interpolator = flubber.interpolate(initialPath, targetPath, { maxSegmentLength: 10 });
-
-                    // Return interpolated path at time t
                     return interpolator(t);
                 };
             })
