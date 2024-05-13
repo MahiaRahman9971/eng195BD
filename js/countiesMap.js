@@ -39,22 +39,29 @@ class MapVis {
             .attr("opacity", 1);
 
         vis.counties.transition().duration(6000)
+            .ease(d3.easeCubic)  // Using a cubic easing for smoother transitions
             .attrTween("d", function (d, i) {
                 const pixelIndex = i % vis.pixelData.length;
                 const pixel = vis.pixelData[pixelIndex];
+                const initialColor = d3.select(this).style("fill");
+                const targetColor = pixel.hex;
                 const targetPath = `M${pixel.x * squareSize + 200},${pixel.y * squareSize} h${squareSize} v${squareSize} h${-squareSize} Z`;
-                const interpolator = flubber.interpolate(this.getAttribute("d"), targetPath, {maxSegmentLength: 10});
+                const pathInterpolator = flubber.interpolate(this.getAttribute("d"), targetPath, {maxSegmentLength: 10});
+                const colorInterpolator = d3.interpolateRgb(initialColor, targetColor);
+
                 return function (t) {
-                    return interpolator(t);
+                    this.setAttribute("fill", colorInterpolator(Math.sqrt(t)));  // Apply a non-linear progression for color
+                    return pathInterpolator(t);  // Apply linear progression for shape
                 };
             })
             .on("end", function (d, i) {
                 const pixelIndex = i % vis.pixelData.length;
                 const pixel = vis.pixelData[pixelIndex];
                 d3.select(this)
-                    .attr("fill", pixel.hex)  // Set fill directly instead of class for final color
-                    .attr("class", null);     // Optionally remove the mobility class if no longer needed
-                console.log(pixel);
+                    .transition()
+                    .duration(1000)
+                    .attr("fill", pixel.hex)
+                    .attr("class", null);
             });
 
         function handleGetMobility(d) {
