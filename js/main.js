@@ -20,12 +20,10 @@ let promises = [
     }),
     d3.csv("data/locationBasedNeighborhood.csv"),
     d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-albers-10m.json"),
-    d3.csv("data/newImgData2.csv", d => {
+    d3.csv("data/pixelDataFinal.csv", d => {
         d.x = +d.x;
         d.y = +d.y;
-        d.r = +d.r;
-        d.g = +d.g;
-        d.b = +d.b;
+        d.hex = d.hex;
         return d;
     })
 ];

@@ -1,43 +1,34 @@
 class MapVis {
-    // Constructor method to initialize MapVis object
     constructor(parentElement, geoData, mobilityData, stateData, pixelData) {
         this.parentElement = parentElement;
         this.geoData = geoData;
         this.mobilityData = mobilityData;
         this.stateData = stateData;
         this.pixelData = pixelData;
-
         this.initVis();
     }
 
     initVis() {
         let vis = this;
 
-        vis.margin = { top: 10, right: 0, bottom: 10, left: 0 };
+        vis.margin = {top: 10, right: 0, bottom: 10, left: 0};
         vis.width = document.getElementById(vis.parentElement).getBoundingClientRect().width - vis.margin.left - vis.margin.right;
-        vis.height = vis.width * 0.5; // Changed the aspect ratio to increase the height
+        vis.height = vis.width * 0.5;
 
-        // SVG drawing area
         vis.svg = d3.select("#" + vis.parentElement).append("svg")
             .attr("width", vis.width + vis.margin.left + vis.margin.right)
             .attr("height", vis.height + vis.margin.top + vis.margin.bottom)
             .append("g")
             .attr("transform", "translate(" + vis.margin.left + "," + vis.margin.top + ")");
 
-        // Converting TopoJSON data into GeoJSON data structure
         vis.geo = topojson.feature(vis.geoData, vis.geoData.objects.counties).features;
+        vis.path = d3.geoPath();
 
-        // Setting up path
-        vis.path = d3.geoPath()
-
-        // Calculate grid size
         const numItems = vis.geo.length;
         const numCols = Math.ceil(Math.sqrt(numItems));
-        const numRows = numCols; // Make it as square as possible
-        const squareSize = 5;  // Increase square size for a larger final image
+        const numRows = numCols;
+        const squareSize = 5;
 
-
-        // Initial placement of counties
         vis.counties = vis.svg.append("g")
             .attr("class", "counties")
             .selectAll(".county")
@@ -45,24 +36,25 @@ class MapVis {
             .enter().append("path")
             .attr("class", "county")
             .attr("d", vis.path)
-            .attr("class", d => handleGetMobility(d))
-            .attr("opacity", 1); // Start fully visible
+            // .attr("class", d => handleGetMobility(d))
+            .attr("opacity", 1);
 
-        // Move counties to form a larger square grid
         vis.counties.transition().duration(6000)
             .attrTween("d", function (d, i) {
                 const pixelIndex = i % vis.pixelData.length;
                 const pixel = vis.pixelData[pixelIndex];
                 const targetPath = `M${pixel.x * squareSize},${pixel.y * squareSize} h${squareSize} v${squareSize} h${-squareSize} Z`;
-
-                const interpolator = flubber.interpolate(this.getAttribute("d"), targetPath, { maxSegmentLength: 10 });
+                const interpolator = flubber.interpolate(this.getAttribute("d"), targetPath, {maxSegmentLength: 10});
                 return function (t) {
                     return interpolator(t);
                 };
             })
-            .attr("opacity", 0.7) // Adjust opacity as needed
-            .end() // Ensure transitions end properly
-            .catch(error => console.error('Error during transition:', error));
+            .on("end", function (d, i) {
+                const pixelIndex = i % vis.pixelData.length;
+                const pixel = vis.pixelData[pixelIndex];
+                d3.select(this).attr("fill", pixel.hex);
+                console.log(pixel);
+            });
 
         function handleGetMobility(d) {
             for (let i = 0; i < vis.mobilityData.length; i++) {
@@ -100,9 +92,8 @@ class MapVis {
             }
         }
     }
-
     updateVis() {
-        // Optional: Define how to update the visualization when data changes
         let vis = this;
+        // Optional: Define how to update the visualization when data changes
     }
 }
