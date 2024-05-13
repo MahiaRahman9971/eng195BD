@@ -1,9 +1,10 @@
 let mapVis;
 let pixelVis;
 let slideVal = 0;
-let slideBounds = [0,500];
+let slideBounds = [0, 500];
 let guessAccuracy = 0;
 
+// Define promises for data loading
 let promises = [
     d3.csv("data/upwardMobility.csv", d => {
         d.year = +d.year;
@@ -19,22 +20,28 @@ let promises = [
     }),
     d3.csv("data/locationBasedNeighborhood.csv"),
     d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-albers-10m.json"),
+    d3.csv("data/pixel_data_filtered.csv", d => {  // Ensure pixel data is correctly parsed
+        d.x = +d.x;
+        d.y = +d.y;
+        d.r = +d.r;
+        d.g = +d.g;
+        d.b = +d.b;
+        return d;
+    })
 ];
 
-
+// Load all data using Promise.all
 Promise.all(promises)
     .then(function (data) {
-        createVis(data)
+        createVis(data);
     })
     .catch(function (err) {
-        console.log(err)
+        console.error("Error loading data: ", err);
     });
 
-
+// Function to initialize the visualizations after data is loaded
 function createVis(data) {
-    // Map Vis
-    mapVis = new MapVis("map-vis", data[2], data[3], data[6])
-
-    // Pixel Vis
-    pixelVis = new PixelateVis("canvas", "img/childPhoto.png");
+    // Assuming the order of data aligns with the promises defined above
+    // Initialize Map Visualization
+    mapVis = new MapVis("map-vis", data[2], data[3], data[6], data[7]); // Pass the pixel data as the last argument
 }
