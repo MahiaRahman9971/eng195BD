@@ -40,5 +40,5 @@ Promise.all(promises)
 // Function to initialize the visualizations after data is loaded
 function createVis(data) {
     console.log("Data loaded", data);  // Check if data is correctly passed
-    mapVis = new MapVis("map-vis", data[2], data[3], data[6], data[7]); // Pass the pixel data as the last argument
+    mapVis = new MapVis("map-vis", data[2], data[3], data[7]); // Pass the pixel data as the last argument
 }

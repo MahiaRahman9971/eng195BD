@@ -1,9 +1,8 @@
 class MapVis {
-    constructor(parentElement, geoData, mobilityData, stateData, pixelData) {
+    constructor(parentElement, geoData, mobilityData, pixelData) {
         this.parentElement = parentElement;
         this.geoData = geoData;
         this.mobilityData = mobilityData;
-        this.stateData = stateData;
         this.pixelData = pixelData;
         this.initVis();
     }
@@ -19,7 +18,7 @@ class MapVis {
             .attr("width", vis.width + vis.margin.left + vis.margin.right)
             .attr("height", vis.height + vis.margin.top + vis.margin.bottom)
             .append("g")
-            .attr("transform", "translate(" + (vis.margin.left + 250) + "," + (vis.margin.top + 50) + ")"); // Adjust these values
+            .attr("transform", "translate(" + (vis.margin.left + 250) + "," + (vis.margin.top) + ")"); // Adjust these values
 
         vis.geo = topojson.feature(vis.geoData, vis.geoData.objects.counties).features;
         vis.path = d3.geoPath();
@@ -38,14 +37,15 @@ class MapVis {
             .attr("d", vis.path)
             .attr("opacity", 1);
 
-        vis.counties.transition().duration(6000)
+        vis.counties.transition().duration(15000)
+            .delay(5000)
             .ease(d3.easeCubic)  // Using a cubic easing for smoother transitions
             .attrTween("d", function (d, i) {
                 const pixelIndex = i % vis.pixelData.length;
                 const pixel = vis.pixelData[pixelIndex];
                 const initialColor = d3.select(this).style("fill");
                 const targetColor = pixel.hex;
-                const targetPath = `M${pixel.x * squareSize + 200},${pixel.y * squareSize} h${squareSize} v${squareSize} h${-squareSize} Z`;
+                const targetPath = `M${pixel.x * squareSize + 150},${pixel.y * squareSize} h${squareSize} v${squareSize} h${-squareSize} Z`;
                 const pathInterpolator = flubber.interpolate(this.getAttribute("d"), targetPath, {maxSegmentLength: 10});
                 const colorInterpolator = d3.interpolateRgb(initialColor, targetColor);
 
@@ -99,6 +99,68 @@ class MapVis {
                 return "color-error";
             }
         }
+
+        // Legend
+        const legW = vis.width / 6;
+        const legH = 20;
+        const legendColors = [.35, .40, .42, .48, .50, .52, .55];
+
+        let legend = vis.svg.append("g")
+            .attr("transform", "translate(" + (vis.width * .50 + 150) + "," + (vis.height * .85 - 50) + ")") // Move up
+            .attr("id", "legend");
+
+        let xScale = d3.scaleLinear()
+            .domain([0, 70])
+            .range([0, legW]);
+
+        let xAxis = d3.axisBottom()
+            .scale(xScale)
+            .ticks(9)
+            .tickSize(30)
+            .tickFormat((d, i) => ['35%', '40%', '42%', '44%', '46%', '48%', '50%', '55%'][i]);
+
+        legend.selectAll("rect")
+            .data(legendColors)
+            .enter()
+            .append("rect")
+            .attr("width", legW / legendColors.length)
+            .attr("height", legH)
+            .attr("x", (d, i) => i * (legW / legendColors.length))
+            .attr("class", d => handleGetColor(d));
+
+        legend.append("g")
+            .attr("transform", "translate(0, -10)") // Move axis text up by 10 pixels
+            .call(xAxis);
+
+        legend.append("text")
+            .attr("x", legW / 2)
+            .attr("y", legH + 30)
+            .attr("text-anchor", "middle")
+            .style("font-size", "12px")
+            .text("Percentage of Mobility");
+
+        // Add a group for the descriptive text above the legend
+        let legendDescriptionGroup = vis.svg.append("g")
+            .attr("transform", "translate(" + (vis.width * 0.50 - 125) + "," + ((vis.height * .85) - 140) + ")") // Adjust position
+            .attr("id", "legend-description-group")
+            .attr("text-anchor", "middle");
+
+        // Append text with multiple tspans for line breaks
+        legendDescriptionGroup.append("text")
+            .style("font-size", "10px") // Smaller font size
+            .selectAll("tspan")
+            .data([
+                "Mean household income rank for children whose parents were",
+                "at the 25th percentile of the national income distribution.",
+                "Incomes for children were measured as meanearnings in",
+                "2014-2015 when they were between the ages 31-37. Household",
+                " income is defined as the sum of own and spouse’s income."
+            ])
+            .enter()
+            .append("tspan")
+            .attr("x", 390) // Center the tspans
+            .attr("dy", "1.2em") // Add space between lines
+            .text(d => d);
     }
     updateVis() {
         let vis = this;
