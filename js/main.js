@@ -20,7 +20,7 @@ let promises = [
     }),
     d3.csv("data/locationBasedNeighborhood.csv"),
     d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-albers-10m.json"),
-    d3.csv("data/pixel_data_filtered.csv", d => {  // Ensure pixel data is correctly parsed
+    d3.csv("data/newImgData2.csv", d => {
         d.x = +d.x;
         d.y = +d.y;
         d.r = +d.r;
@@ -41,7 +41,6 @@ Promise.all(promises)
 
 // Function to initialize the visualizations after data is loaded
 function createVis(data) {
-    // Assuming the order of data aligns with the promises defined above
-    // Initialize Map Visualization
+    console.log("Data loaded", data);  // Check if data is correctly passed
     mapVis = new MapVis("map-vis", data[2], data[3], data[6], data[7]); // Pass the pixel data as the last argument
 }
